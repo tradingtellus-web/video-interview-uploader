@@ -38,7 +38,7 @@ app.post('/upload', async (req, res) => {
 
     const msg = {
       to: recipientEmail,
-      from: 'noreply@interview-recorder.com',
+      from: 'tradingtellus@gmail.com',
       subject: subject,
       text: `Interview recordings submitted at ${timestamp}\n\n${videos.length} video(s) attached.`,
       html: `<h2>Interview Recordings Received</h2><p>Submitted at: ${timestamp}</p><p>${videos.length} video(s) have been attached to this email.</p>`,
