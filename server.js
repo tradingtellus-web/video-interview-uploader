@@ -27,16 +27,12 @@ function initializeGoogleAuth() {
 
 initializeGoogleAuth();
 
-app.post('/upload', async (req, res) => {
+async function uploadVideos() {
   try {
-    const { videos, parentFolderId } = req.body;
+    const { videos } = req.body;
 
     if (!videos || !Array.isArray(videos)) {
       return res.status(400).json({ error: 'No videos provided' });
-    }
-
-    if (!parentFolderId) {
-      return res.status(400).json({ error: 'Parent folder ID not provided' });
     }
 
     const timestamp = new Date().toLocaleString();
@@ -44,8 +40,7 @@ app.post('/upload', async (req, res) => {
 
     const folderMetadata = {
       name: folderName,
-      mimeType: 'application/vnd.google-apps.folder',
-      parents: [parentFolderId]
+      mimeType: 'application/vnd.google-apps.folder'
     };
 
     const folderRes = await drive.files.create({
