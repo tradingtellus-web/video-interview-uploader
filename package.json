@@ -1,20 +1,20 @@
 {
   "name": "video-interview-uploader",
   "version": "1.0.0",
-  "description": "Backend for uploading interview videos to Google Drive",
+  "description": "Video interview recorder with S3 storage and Mailgun notifications",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
-    "dependencies": {
-     "express": "^4.18.2",
-     "cors": "^2.8.5",
-     "dotenv": "^16.3.1",
-     "mailgun.js": "^9.2.0",
-     "form-data": "^4.0.0"
-   },
   "engines": {
     "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "aws-sdk": "^2.1400.0",
+    "mailgun.js": "^9.2.0",
+    "form-data": "^4.0.0"
   }
 }
