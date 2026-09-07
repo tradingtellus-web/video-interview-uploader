@@ -12,12 +12,6 @@ app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 const PORT = process.env.PORT || 3001;
 
-console.log('AWS Config:');
-console.log('- Access Key ID:', process.env.AWS_ACCESS_KEY_ID ? 'Set' : 'NOT SET');
-console.log('- Secret Key:', process.env.AWS_SECRET_ACCESS_KEY ? 'Set' : 'NOT SET');
-console.log('- Bucket:', process.env.AWS_S3_BUCKET);
-console.log('- Region:', process.env.AWS_REGION);
-
 // AWS S3 Setup
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -56,8 +50,6 @@ app.post('/upload', async (req, res) => {
       return res.status(400).json({ error: 'S3 bucket not configured' });
     }
 
-    console.log(`Starting upload for role: ${role}`);
-
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const folderName = `interview-${role}-${timestamp}`;
     const downloadLinks = [];
@@ -68,8 +60,6 @@ app.post('/upload', async (req, res) => {
         try {
           const buffer = Buffer.from(video.data, 'base64');
           const fileName = `${folderName}/Question_${index + 1}_Answer.webm`;
-
-          console.log(`Uploading Question ${index + 1}...`);
 
           const params = {
             Bucket: bucket,
@@ -83,10 +73,19 @@ app.post('/upload', async (req, res) => {
               console.error(`Error uploading Question ${index + 1}:`, err);
               reject(err);
             } else {
-              console.log(`Question ${index + 1} uploaded successfully to:`, data.Location);
+              // Generate presigned URL (valid for 7 days)
+              const presignedParams = {
+                Bucket: bucket,
+                Key: fileName,
+                Expires: 7 * 24 * 60 * 60 // 7 days in seconds
+              };
+
+              const presignedUrl = s3.getSignedUrl('getObject', presignedParams);
+
+              console.log(`Question ${index + 1} uploaded successfully`);
               downloadLinks.push({
                 question: index + 1,
-                url: data.Location
+                url: presignedUrl
               });
               resolve(data);
             }
@@ -102,14 +101,14 @@ app.post('/upload', async (req, res) => {
 
     console.log(`All videos uploaded. Sending email notification...`);
 
-    // Create email with download links
+    // Create email with presigned download links
     const roleLabel = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Interview';
     const subject = `${roleLabel} Interview Recordings - ${new Date().toLocaleString()}`;
 
     const emailBody = `
 <h2>${roleLabel} Interview Recordings Received</h2>
 <p>Submitted at: ${new Date().toLocaleString()}</p>
-<p>${videos.length} video(s) uploaded to cloud storage. Download links below:</p>
+<p>${videos.length} video(s) uploaded to secure cloud storage. Download links below:</p>
 <hr>
 ${downloadLinks.map(link => `
 <p>
